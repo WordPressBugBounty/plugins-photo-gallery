@@ -1250,6 +1250,11 @@ class WDWLibrary {
     if ( $load_more_image_count < 0 ) {
       $load_more_image_count = 0;
     }
+    $sort_direction = trim( (string) $sort_direction );
+    if ( strtolower( $sort_direction ) !== 'asc' ) {
+      $sort_direction = 'desc';
+    }
+    $sort_direction_sql = ( $sort_direction === 'desc' ) ? 'DESC' : 'ASC';
     $gallery_id = (int) $gallery_id;
     $tag = (int) $tag;
     global $wpdb;
@@ -1263,13 +1268,6 @@ class WDWLibrary {
         $filter_teg_arr = array_map('intval', explode(",", trim($filter_teg)));
         $_REQUEST[$tag_input_name] = $filter_teg_arr;
       }
-    }
-
-    if ( strtolower($sort_direction) !== 'asc' ) {
-      $sort_direction = 'desc';
-    }
-    else {
-      $sort_direction = 'asc';
     }
 
     $where = '';
@@ -1290,17 +1288,27 @@ class WDWLibrary {
       $where = 'AND (' . $alt_search . ' OR ' . $description_search . ')';
     }
 
-    if ( $sort_by == 'size' || $sort_by == 'resolution' ) {
-      $sort_by = ' CAST(image.' . $sort_by . ' AS SIGNED) ';
+    $sort_by_trim = trim( (string) $sort_by );
+    if ( $sort_by_trim === 'size' ) {
+      $order_by_sort = ' CAST(image.size AS SIGNED) ';
     }
-    elseif ( $sort_by == 'random' || $sort_by == 'RAND()' ) {
-      $sort_by = 'RAND()';
+    elseif ( $sort_by_trim === 'resolution' ) {
+      $order_by_sort = ' CAST(image.resolution AS SIGNED) ';
     }
-    elseif ( ($sort_by != 'alt') && ($sort_by != 'date') && ($sort_by != 'filetype') && ($sort_by != 'RAND()') && ($sort_by != 'filename') ) {
-      $sort_by = 'image.`order`';
+    elseif ( $sort_by_trim === 'random' || $sort_by_trim === 'RAND()' ) {
+      $order_by_sort = 'RAND()';
+    }
+    elseif ( in_array( $sort_by_trim, array( 'alt', 'date', 'filetype', 'filename' ), true ) ) {
+      $order_by_map = array(
+        'alt' => 'image.alt',
+        'date' => 'image.date',
+        'filetype' => 'image.filetype',
+        'filename' => 'image.filename',
+      );
+      $order_by_sort = $order_by_map[ $sort_by_trim ];
     }
     else {
-      $sort_by = 'image.' . $sort_by;
+      $order_by_sort = 'image.`order`';
     }
 
     $items_in_page = $images_per_page;
@@ -1355,11 +1363,11 @@ class WDWLibrary {
     $where .= ' AND gallery.published = 1 ';
 
     if ( !empty($prepareArgs) ) {
-      $sql = $wpdb->prepare('SELECT image.* FROM ' . $wpdb->prefix . 'bwg_image as image ' . $join . ' WHERE image.published=1 ' . $where . ' ORDER BY ' . str_replace('RAND()', 'RAND(' . $bwg_random_seed . ')', $sort_by) . ' ' . $sort_direction . ', image.id asc ' . $limit_str, $prepareArgs);
+      $sql = $wpdb->prepare('SELECT image.* FROM ' . $wpdb->prefix . 'bwg_image as image ' . $join . ' WHERE image.published=1 ' . $where . ' ORDER BY ' . str_replace('RAND()', 'RAND(' . $bwg_random_seed . ')', $order_by_sort) . ' ' . $sort_direction_sql . ', image.id asc ' . $limit_str, $prepareArgs);
       $rows = $wpdb->get_results($sql);
     }
     else {
-      $sql = 'SELECT image.* FROM ' . $wpdb->prefix . 'bwg_image as image ' . $join . ' WHERE image.published=1 ' . $where . ' ORDER BY ' . str_replace('RAND()', 'RAND(' . $bwg_random_seed . ')', $sort_by) . ' ' . $sort_direction . ', image.id asc ' . $limit_str;
+      $sql = 'SELECT image.* FROM ' . $wpdb->prefix . 'bwg_image as image ' . $join . ' WHERE image.published=1 ' . $where . ' ORDER BY ' . str_replace('RAND()', 'RAND(' . $bwg_random_seed . ')', $order_by_sort) . ' ' . $sort_direction_sql . ', image.id asc ' . $limit_str;
       $rows = $wpdb->get_results($sql);
     }
     if ( $images_per_page ) {
