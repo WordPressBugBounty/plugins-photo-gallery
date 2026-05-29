@@ -3302,6 +3302,103 @@ class WDWLibrary {
   }
 
   /**
+   * Whitelist sort direction for SQL ORDER BY (returns ASC or DESC).
+   *
+   * @param string $order_by
+   *
+   * @return string
+   */
+  public static function sanitize_sort_direction( $order_by ) {
+    return ( strtolower( trim( (string) $order_by ) ) === 'asc' ) ? 'ASC' : 'DESC';
+  }
+
+  /**
+   * Whitelist album/gallery-group sort column for SQL ORDER BY.
+   *
+   * @param string $sort_by
+   * @param string $from
+   *
+   * @return string
+   */
+  public static function sanitize_album_sort_column( $sort_by, $from = '' ) {
+    if ( !empty( $from ) && $from === 'widget' ) {
+      return 'id';
+    }
+    $sort_by = trim( (string) $sort_by );
+    if ( $sort_by === 'random' || $sort_by === 'RAND()' ) {
+      return 'random';
+    }
+    $allowed_columns = array( 'order', 'name', 'modified_date', 'id' );
+    return in_array( $sort_by, $allowed_columns, true ) ? $sort_by : 'order';
+  }
+
+  /**
+   * Whitelist image sort column for shortcode attributes.
+   *
+   * @param string $sort_by
+   *
+   * @return string
+   */
+  public static function sanitize_image_sort_column( $sort_by ) {
+    $sort_by = trim( (string) $sort_by );
+    if ( $sort_by === 'RAND()' ) {
+      return 'random';
+    }
+    $allowed_columns = array( 'order', 'alt', 'date', 'filename', 'size', 'resolution', 'random', 'filetype' );
+    return in_array( $sort_by, $allowed_columns, true ) ? $sort_by : 'order';
+  }
+
+  /**
+   * Sanitize sort/order attributes in shortcode tagtext before storage.
+   *
+   * @param string $tagtext
+   *
+   * @return string
+   */
+  public static function sanitize_shortcode_tagtext( $tagtext ) {
+    $tagtext = trim( (string) $tagtext );
+    if ( $tagtext === '' ) {
+      return '';
+    }
+    $data = self::parse_tagtext_to_array( $tagtext );
+    if ( empty( $data ) ) {
+      return $tagtext;
+    }
+    $album_group_sort_keys = array(
+      'compact_album_sort_by',
+      'masonry_album_sort_by',
+      'extended_album_sort_by',
+      'all_album_sort_by',
+    );
+    $sanitized = '';
+    foreach ( $data as $key => $value ) {
+      if ( in_array( $key, $album_group_sort_keys, true ) ) {
+        $value = self::sanitize_album_sort_column( $value );
+      }
+      elseif ( preg_match( '/_order_by$/', $key ) || $key === 'order_by' ) {
+        $value = ( self::sanitize_sort_direction( $value ) === 'ASC' ) ? 'asc' : 'desc';
+      }
+      elseif ( preg_match( '/_sort_by$/', $key ) || $key === 'sort_by' ) {
+        $value = self::sanitize_image_sort_column( $value );
+      }
+      $sanitized .= ' ' . $key . '="' . self::escape_shortcode_attribute_value( $value ) . '"';
+    }
+
+    return $sanitized;
+  }
+
+  /**
+   * Strip characters that break shortcode attribute quoting (preserves URLs and other content).
+   *
+   * @param string $value
+   *
+   * @return string
+   */
+  public static function escape_shortcode_attribute_value( $value ) {
+    return str_replace( array( '"', "\0" ), '', (string) $value );
+  }
+
+  /**
 
  * @param $tagtext
  *

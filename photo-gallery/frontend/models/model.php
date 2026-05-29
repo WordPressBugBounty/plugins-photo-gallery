@@ -110,9 +110,13 @@ class BWGModelSite {
       $albums_per_page = 0;
     }
     global $wpdb;
-    $order_by = 'ORDER BY `' . ( ( !empty( $from ) && $from === 'widget' ) ? 'id' : $sort_by ) . '` ' . $order_by;
-    if ( $sort_by == 'random' || $sort_by == 'RAND()' ) {
+    $sort_by = WDWLibrary::sanitize_album_sort_column( $sort_by, $from );
+    $sort_direction = WDWLibrary::sanitize_sort_direction( $order_by );
+    if ( $sort_by === 'random' ) {
       $order_by = 'ORDER BY RAND()';
+    }
+    else {
+      $order_by = 'ORDER BY `' . $sort_by . '` ' . $sort_direction;
     }
     $search_where = '';
     $search_value = trim( WDWLibrary::get( 'bwg_search_' . $bwg ) );
