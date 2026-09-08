@@ -71,6 +71,10 @@ class WDWLibrary {
     if ( !isset($value) ) {
       if ( $default_value === NULL ) {
         return NULL;
+      }
+      // Apply numeric callbacks to defaults so shortcode/fallback IDs cannot bypass intval/absint.
+      if ( in_array( $callback, array( 'intval', 'absint' ), true ) ) {
+        $value = call_user_func( $callback, $default_value );
       } else {
         $value = $default_value;
       }
