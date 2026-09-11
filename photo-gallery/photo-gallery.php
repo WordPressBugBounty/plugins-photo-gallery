@@ -3,7 +3,7 @@
  * Plugin Name: Photo Gallery
  * Plugin URI: https://10web.io/plugins/wordpress-photo-gallery/?utm_source=photo_gallery&utm_medium=free_plugin
  * Description: This plugin is a fully responsive gallery plugin with advanced functionality.  It allows having different image galleries for your posts and pages. You can create unlimited number of galleries, combine them into albums, and provide descriptions and tags.
- * Version: 1.8.45
+ * Version: 1.8.46
  * Author: Photo Gallery Team
  * Author URI: https://10web.io/plugins/?utm_source=photo_gallery&utm_medium=free_plugin
  * Text Domain: photo-gallery
@@ -107,7 +107,7 @@ final class BWG {
     $this->plugin_url = plugins_url(plugin_basename(dirname(__FILE__)));
     $this->front_url = $this->plugin_url;
     $this->main_file = plugin_basename(__FILE__);
-    $this->plugin_version = '1.8.45';
+    $this->plugin_version = '1.8.46';
     $this->db_version = '1.8.45';
     $this->prefix = 'bwg';
     $this->nicename = __('Photo Gallery', 'photo-gallery');
@@ -329,7 +329,7 @@ final class BWG {
   }
 
   public function register_block_editor_assets($assets) {
-    $version = '2.0.6';
+    $version = '2.0.7';
     $js_path = $this->plugin_url . '/js/tw-gb/block.js';
     $css_path = $this->plugin_url . '/css/tw-gb/block.css';
     if (!isset($assets['version']) || version_compare($assets['version'], $version) === -1) {
@@ -377,13 +377,15 @@ final class BWG {
     // Get the last version from all 10Web plugins.
     $assets = apply_filters('tw_get_block_editor_assets', array());
     // Not performing unregister or unenqueue as in old versions all are with prefixes.
-    wp_enqueue_script('tw-gb-block', $assets['js_path'], array( 'wp-blocks', 'wp-element' ), $assets['version']);
+    wp_enqueue_script('tw-gb-block', $assets['js_path'], array( 'wp-blocks', 'wp-element', 'wp-block-editor', 'jquery' ), $assets['version']);
     wp_localize_script('tw-gb-block', 'tw_obj_translate', array(
       'nothing_selected' => __('Nothing selected.', 'photo-gallery'),
       'empty_item' => __('- Select -', 'photo-gallery'),
       'blocks' => json_encode($blocks)
     ));
-    wp_enqueue_style('tw-gb-block', $assets['css_path'], array( 'wp-edit-blocks' ), $assets['version']);
+    // Load in the admin parent document so the portaled shortcode modal is styled
+    // when the post editor canvas is iframed (do not depend on wp-edit-blocks).
+    wp_enqueue_style('tw-gb-block', $assets['css_path'], array(), $assets['version']);
   }
 
   /**
