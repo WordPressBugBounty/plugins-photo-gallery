@@ -2274,13 +2274,18 @@ class ShortcodeView_bwg extends AdminView_bwg {
             } else if( typeof jQuery("#insert").attr('data-callback') != "undefined" && jQuery("#insert").attr('data-callback').length ) {
               var parentJqWin = bwgGetParentJQueryWindow();
               var parentDoc = bwgGetParentDocument();
-              if ( parentJqWin && parentDoc !== document ) {
+              if ( parentJqWin && typeof parentJqWin.bwgApplyElementorShortcode === 'function' ) {
+                parentJqWin.bwgApplyElementorShortcode(shortcode_id);
+              } else if ( parentJqWin && parentDoc !== document ) {
                 parentJqWin.jQuery('.elementor-control-bwg_elementor_shortcode input').val(shortcode_id).trigger("input");
                 jQuery('.elementor-control-bwg_view_type_shortcode input', parentDoc).val("temp");
                 jQuery(".elementor-control-bwg_view_type_shortcode .elementor-choices-label", parentDoc).trigger('click');
                 jQuery('.elementor-control-bwg_view_type_shortcode input', parentDoc).val(shortcode_id);
                 jQuery(".elementor-control-bwg_view_type_shortcode .elementor-choices-label", parentDoc).trigger('click');
               }
+              try {
+                window.parent.postMessage({ type: 'bwg-elementor-shortcode', shortcode_id: String(shortcode_id) }, window.location.origin);
+              } catch ( e2 ) {}
             }
             else if ( typeof bwgTop.send_to_editor === 'function' ) {
               bwgTop.send_to_editor(short_code);
