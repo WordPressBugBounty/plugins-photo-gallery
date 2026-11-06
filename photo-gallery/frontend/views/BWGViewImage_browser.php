@@ -39,7 +39,7 @@ class BWGViewImage_browser extends BWGViewSite {
     }
     elseif ( $params['watermark_type'] == 'image' ) {
       $show_watermark = TRUE;
-      $watermark_image_or_text = '<img class="bwg_image_browser_watermark_img_' . esc_attr($bwg) . '" src="' . urldecode($params['watermark_url']) . '" />';
+      $watermark_image_or_text = '<img class="bwg_image_browser_watermark_img_' . esc_attr($bwg) . '" src="' . esc_url(urldecode($params['watermark_url'])) . '" />';
       $watermark_a = '';
       $watermark_div = '';
       $params['watermark_font'] = '';

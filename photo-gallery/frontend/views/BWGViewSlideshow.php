@@ -551,14 +551,14 @@ public function display($params = array(), $bwg = 0, $ajax = FALSE) {
                 <?php
                 if ( $params['watermark_type'] == 'image' ) {
                   ?>
-                  <a class="bwg-a" href="<?php echo urldecode($watermark_link); ?>" target="_blank">
-                  <img class="bwg_slideshow_watermark_image_<?php echo esc_attr($bwg); ?> bwg_slideshow_watermark_<?php echo esc_attr($bwg); ?>" src="<?php echo urldecode($watermark_url); ?>" />
+                  <a class="bwg-a" href="<?php echo esc_url(urldecode($watermark_link)); ?>" target="_blank">
+                  <img class="bwg_slideshow_watermark_image_<?php echo esc_attr($bwg); ?> bwg_slideshow_watermark_<?php echo esc_attr($bwg); ?>" src="<?php echo esc_url(urldecode($watermark_url)); ?>" />
                 </a>
                   <?php
                 }
                 elseif ( $params['watermark_type'] == 'text' ) {
                   ?>
-                  <a class="bwg_none_selectable_<?php echo esc_attr($bwg); ?> bwg_slideshow_watermark_text_<?php echo esc_attr($bwg); ?> bwg_slideshow_watermark_<?php echo esc_attr($bwg); ?>" target="_blank" href="<?php echo urldecode($watermark_link); ?>"><?php echo esc_html($params['watermark_text']); ?></a>
+                  <a class="bwg_none_selectable_<?php echo esc_attr($bwg); ?> bwg_slideshow_watermark_text_<?php echo esc_attr($bwg); ?> bwg_slideshow_watermark_<?php echo esc_attr($bwg); ?>" target="_blank" href="<?php echo esc_url(urldecode($watermark_link)); ?>"><?php echo esc_html($params['watermark_text']); ?></a>
                   <?php
                 }
                 ?>
